@@ -1,0 +1,56 @@
+{
+  "channel_defaults": {},
+  "server": {
+    "RTexpiresAt": 1691802211,
+    "debug": true,
+    "group_id": "1234567",
+    "http_debug": false,
+    "http_demo": true,
+    "http_dir": "web",
+    "http_login": "demo",
+    "http_password": "demo",
+    "http_port": ":8083",
+    "https": false,
+    "https_auto_tls": false,
+    "https_auto_tls_name": "",
+    "https_cert": "server.crt",
+    "https_key": "server.key",
+    "https_port": ":443",
+    "ice_credential": "",
+    "ice_servers": [
+      "stun:stun.l.google.com:19302"
+    ],
+    "ice_username": "",
+    "log_level": "debug",
+    "roleid_now": "1",
+    "rolelevel_now": "admin",
+    "rtsp_port": ":5541",
+    "token": {
+      "backend": "http://127.0.0.1/test.php",
+      "enable": false
+    },
+    "username": "admin",
+    "webrtc_port_max": 0,
+    "webrtc_port_min": 0
+  },
+  "streams": {
+    "27aec28e-6181-4753-9acd-0456a75f0289": {
+      "channels": {
+        "0": {
+          "audio": true,
+          "url": "rtmp://171.25.232.10/12d525bc9f014e209c1280bc0d46a87e"
+        }
+      },
+      "name": "111111111"
+    },
+    "f5aa857c-13e2-4c57-9cf1-c8837ff7a983": {
+      "channels": {
+        "0": {
+          "on_demand": true,
+          "url": "rtsp://admin:Abc123789_@222.253.220.109:1554/profile2/media.smp"
+        }
+      },
+      "name": "viet"
+    }
+  }
+}
