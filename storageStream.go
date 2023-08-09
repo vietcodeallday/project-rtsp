@@ -16,8 +16,6 @@ import (
 	"github.com/liip/sheriff"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -99,14 +97,6 @@ func (obj *StorageST) CreateRefreshToken(c *gin.Context, username string) {
 
 	tokenRefreshS := RSA_OAEP_Encrypt(tokenRefreshCreated, publicKey)
 	c.String(200, "tokenRefresh: "+tokenRefreshS)
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(ctx, clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-
 	col := client.Database("RTSP-WEB").Collection("USER")
 	/***/
 	filter := bson.D{primitive.E{Key: "username", Value: username}}
