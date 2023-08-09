@@ -16,7 +16,6 @@ var client *mongo.Client
 var ctx context.Context
 
 func init() {
-	//////////////////////////////////****/*/
 	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
 	client, _ = mongo.Connect(context.TODO(), clientOptions)
 	ctx, _ = context.WithTimeout(context.Background(), 240*time.Hour)
