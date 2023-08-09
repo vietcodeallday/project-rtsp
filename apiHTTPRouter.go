@@ -147,7 +147,7 @@ func HTTPAPIServer() {
 		public.StaticFS("/static", http.Dir(Storage.ServerHTTPDir()+"/static"))
 	}
 
-	public.POST("/role/add", AddRole)
+	/*public.POST("/role/add", AddRole)
 	public.POST("/group/add", AddGroup)
 	public.POST("/user/add", AddUser)
 	public.POST("/user/edit", EditUser)
@@ -161,9 +161,9 @@ func HTTPAPIServer() {
 	public.POST("/stream/edit", HTTPAPIServerStreamEdit)
 	public.POST("/stream/delete", HTTPAPIServerStreamDelete)
 	public.GET("/stream/reload", HTTPAPIServerStreamReload)
-	public.GET("/stream/info", HTTPAPIServerStreamInfo)
+	public.GET("/stream/info", HTTPAPIServerStreamInfo)*/
 
-	/*just_super.POST("/role/add", AddRole)
+	just_super.POST("/role/add", AddRole)
 	just_super.POST("/group/add", AddGroup)
 	just_super.POST("/user/add", AddUser)
 	just_super.POST("/user/edit", EditUser)
@@ -180,7 +180,7 @@ func HTTPAPIServer() {
 	together.POST("/stream/delete", HTTPAPIServerStreamDelete)
 	together.GET("/stream/reload", HTTPAPIServerStreamReload)
 	together.GET("/stream/info", HTTPAPIServerStreamInfo)
-	public.POST("/stream/:uuid/channel/:channel/webrtc", HTTPAPIServerStreamWebRTC)*/
+	public.POST("/stream/:uuid/channel/:channel/webrtc", HTTPAPIServerStreamWebRTC)
 
 	/*
 		Streams Multi Control elements
