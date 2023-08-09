@@ -2,16 +2,11 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"os"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -30,15 +25,7 @@ func AddGroup(c *gin.Context) {
 		})
 		return
 	} else {
-		clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-		client, err := mongo.Connect(context.TODO(), clientOptions)
-		if err != nil {
-			fmt.Println("connect Mongo error:", err)
-			os.Exit(1)
-		}
-		ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
 		col := client.Database("RTSP-WEB").Collection("Group")
-		defer client.Disconnect(ctx)
 		col.InsertOne(ctx, payload)
 		c.IndentedJSON(200, Message{Status: 1, Payload: Success})
 	}
@@ -82,15 +69,8 @@ func AddRole(c *gin.Context) {
 		})
 		return
 	} else {
-		clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-		client, err := mongo.Connect(context.TODO(), clientOptions)
-		if err != nil {
-			fmt.Println("connect Mongo error:", err)
-			os.Exit(1)
-		}
-		ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+		/**/
 		col := client.Database("RTSP-WEB").Collection("Role")
-		defer client.Disconnect(ctx)
 		col.InsertOne(ctx, payload)
 		c.IndentedJSON(200, Message{Status: 1, Payload: Success})
 	}
@@ -138,22 +118,16 @@ func AddUser(c *gin.Context) {
 	}
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
 	payload.Password = string(hashedPassword)
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	defer client.Disconnect(ctx)
+	/***/
 	col.InsertOne(ctx, payload)
 
 	var blackList token_Expired
 	blackList.Username = payload.Username
 	blackList.TokenExpired = ""
 	col = client.Database("RTSP-WEB").Collection("Blacklist_Token")
-	defer client.Disconnect(ctx)
+	/***/
 	col.InsertOne(ctx, blackList)
 
 	c.IndentedJSON(200, Message{Status: 1, Payload: Success})
@@ -180,15 +154,9 @@ func EditUser(c *gin.Context) {
 		})
 		return
 	}
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	defer client.Disconnect(ctx)
+	/***/
 	if !CheckUsernameofEdit(username, &payload) {
 		c.AbortWithStatusJSON(500, gin.H{
 			"message": "Username not found",
@@ -203,15 +171,9 @@ func DeleteUser(c *gin.Context) {
 	var payload FindUsername
 	c.BindJSON(&payload)
 	username := payload.Username
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	defer client.Disconnect(ctx)
+	/***/
 	if !CheckUsernameofFind(username) {
 		c.AbortWithStatusJSON(500, gin.H{
 			"message": "Username not found",
@@ -229,15 +191,9 @@ func DeleteUser(c *gin.Context) {
 	c.IndentedJSON(200, Message{Status: 1, Payload: Success})
 }
 func ListUser(c *gin.Context) {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	defer client.Disconnect(ctx)
+	/***/
 	var results []bson.M
 	filter := bson.D{primitive.E{Key: "username", Value: bson.D{{"$exists", true}}}}
 	cursor, _ := col.Find(ctx, filter)
@@ -302,15 +258,9 @@ func HTTPAPIChangePassword(c *gin.Context) {
 	c.BindJSON(&payload)
 	OldPass := payload.Old_Password
 	NewPass := payload.New_Password
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	defer client.Disconnect(ctx)
+	/***/
 	filter := bson.D{primitive.E{Key: "username", Value: (*Storage).UsernameForStream()}}
 	if !(*Storage).CheckOldPassword((*Storage).UsernameForStream(), OldPass) {
 		c.AbortWithStatusJSON(500, gin.H{
@@ -359,15 +309,9 @@ func HTTPAPIServerStreams(c *gin.Context) {
 		c.IndentedJSON(500, Message{Status: 0, Payload: err.Error()})
 		return
 	}
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
-	defer client.Disconnect(ctx)
+	/***/
 	var results []bson.M
 	if (*Storage).CheckRoleInfo() {
 		filter := bson.D{primitive.E{Key: "group_id", Value: bson.D{{"$exists", true}}}}
@@ -552,15 +496,9 @@ func HTTPAPIServerStreamAdd(c *gin.Context) {
 		return
 	}
 
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
-	defer client.Disconnect(ctx)
+	/***/
 	col.InsertOne(ctx, payload)
 	c.IndentedJSON(200, Message{Status: 1, Payload: Success})
 }
@@ -586,15 +524,9 @@ func HTTPAPIServerStreamEdit(c *gin.Context) {
 		})
 		return
 	}
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
-	defer client.Disconnect(ctx)
+	/***/
 	if CheckUUIDofFind(uuid) == "" {
 		c.AbortWithStatusJSON(500, gin.H{
 			"message": "UUID not found! You are not allowed to change the UUID",
@@ -662,15 +594,9 @@ func HTTPAPIServerStreamDelete(c *gin.Context) {
 	var payload FindUUID
 	c.BindJSON(&payload)
 	uuid := payload.UUID
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
-	defer client.Disconnect(ctx)
+	/***/
 	if CheckUUIDofFind(uuid) == "" {
 		c.AbortWithStatusJSON(500, gin.H{
 			"message": "UUID not found",
@@ -696,13 +622,13 @@ func HTTPAPIServerStreamDelete(c *gin.Context) {
 	col.DeleteOne(ctx, filter)
 	errr := Storage.StreamDelete(uuid)
 	if errr != nil {
-		c.IndentedJSON(500, Message{Status: 0, Payload: err.Error()})
+		c.IndentedJSON(500, Message{Status: 0, Payload: errr.Error()})
 		log.WithFields(logrus.Fields{
 			"module": "http_stream",
 			"stream": uuid,
 			"func":   "HTTPAPIServerStreamDelete",
 			"call":   "StreamDelete",
-		}).Errorln(err.Error())
+		}).Errorln(errr.Error())
 		return
 	}
 	c.IndentedJSON(200, Message{Status: 1, Payload: Success})
@@ -762,15 +688,9 @@ func HTTPAPIServerStreamInfo(c *gin.Context) {
 			"call":   "StreamInfo",
 		}).Errorln(err.Error())
 	}
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
-	defer client.Disconnect(ctx)
+	/***/
 	var result []bson.M
 	filter := bson.D{primitive.E{Key: "uuid", Value: uuid}}
 	cursor, _ := col.Find(ctx, filter)

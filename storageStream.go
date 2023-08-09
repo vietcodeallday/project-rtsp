@@ -22,15 +22,8 @@ import (
 )
 
 func CheckExpiredToken(tokenExpired string, username string) bool {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
 	col := client.Database("RTSP-WEB").Collection("Blacklist_Token")
-	defer client.Disconnect(ctx)
+	/***/
 	var results []bson.M
 	filter := bson.D{primitive.E{Key: "username", Value: username}}
 	cursor, _ := col.Find(ctx, filter)
@@ -49,15 +42,9 @@ func SaveExpiredToken(tokenExpired string, username string) {
 	var payload token_Expired
 	payload.Username = username
 	payload.TokenExpired = tokenExpired
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("Blacklist_Token")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
@@ -121,24 +108,18 @@ func (obj *StorageST) CreateRefreshToken(c *gin.Context, username string) {
 	}
 
 	col := client.Database("RTSP-WEB").Collection("USER")
-	defer client.Disconnect(ctx)
+	/***/
 	filter := bson.D{primitive.E{Key: "username", Value: username}}
 	update := bson.D{{"$set", bson.D{{"refresh_token", tokenRefreshS}}}}
 	col.UpdateOne(ctx, filter, update)
 }
 func FindRefreshToken(username string) string {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, _ := col.Find(ctx, bson.M{"username": username})
 	var results []bson.M
-	if err = cur.All(ctx, &results); err != nil {
+	if err := cur.All(ctx, &results); err != nil {
 		log.Fatal(err)
 	}
 	for _, doc := range results {
@@ -191,15 +172,8 @@ func (obj *StorageST) ChangePassword() {
 }
 
 func SavePrivateKey(privateKey *rsa.PrivateKey, username string) {
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(ctx, clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
 	col := client.Database("RTSP-WEB").Collection("USER")
-	defer client.Disconnect(ctx)
+	/***/
 	filter := bson.D{primitive.E{Key: "username", Value: username}}
 
 	privateKeyBytes := x509.MarshalPKCS1PrivateKey(privateKey)
@@ -209,18 +183,12 @@ func SavePrivateKey(privateKey *rsa.PrivateKey, username string) {
 	col.UpdateOne(ctx, filter, update)
 }
 func FindPrivateKey(username string) *rsa.PrivateKey {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, _ := col.Find(ctx, bson.M{"username": username})
 	var results []bson.M
-	if err = cur.All(ctx, &results); err != nil {
+	if err := cur.All(ctx, &results); err != nil {
 		log.Fatal(err)
 	}
 	for _, doc := range results {
@@ -237,15 +205,8 @@ func FindPrivateKey(username string) *rsa.PrivateKey {
 kiểm tra role  level superuser add vào có hợp lệ hay không, return role id
 */
 func CheckRoleLevel(level_role string) string {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.142.208:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
 	col := client.Database("RTSP-WEB").Collection("Role")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"level_role": level_role})
 	if err != nil {
 		log.Fatal(err)
@@ -306,15 +267,9 @@ từ username mà người dùng login vào, thực hiện truy xuất data và 
 func (obj *StorageST) SaveGroupID(username string) string {
 	obj.mutex.Lock()
 	defer obj.mutex.Unlock()
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
@@ -363,15 +318,9 @@ func (obj *StorageST) RoleLevelForStream() string {
 func (obj *StorageST) CheckOldPassword(username string, old_password string) bool {
 	obj.mutex.Lock()
 	defer obj.mutex.Unlock()
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
@@ -401,15 +350,9 @@ kiểm tra người dùng có được thực hiện quyền sửa/xóa stream, 
 func (obj *StorageST) CheckRoleEdit(role_find string, roleLevelEdit string) bool {
 	obj.mutex.Lock()
 	defer obj.mutex.Unlock()
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("Role")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"level_role": roleLevelEdit})
 	if err != nil {
 		log.Fatal(err)
@@ -448,15 +391,9 @@ func (obj *StorageST) CheckRoleInfo() bool {
 kiểm tra username khi người dùng chỉnh sửa/xóa có tồn tại hay không
 */
 func CheckUsernameofEdit(username string, payload *User) bool {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
@@ -494,15 +431,9 @@ func CheckUsernameofEdit(username string, payload *User) bool {
 	}
 }
 func CheckUsernameofFind(username string) bool {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
@@ -523,15 +454,9 @@ func CheckUsernameofFind(username string) bool {
 kiểm tra UUID mà superuser dùng để sửa/xóa có tồn tại hay không, return role id
 */
 func CheckUUIDofFind(uuid string) string {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"uuid": uuid})
 	if err != nil {
 		log.Fatal(err)
@@ -552,15 +477,9 @@ func CheckUUIDofFind(uuid string) string {
 	}
 }
 func CheckUUIDForEditOrDelete(uuid string) string {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"uuid": uuid})
 	if err != nil {
 		log.Fatal(err)
@@ -598,15 +517,9 @@ func CheckUUIDForEditOrDelete(uuid string) string {
 	}
 }
 func CheckGroupIDForEditOrDelete(uuid string) string {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"uuid": uuid})
 	if err != nil {
 		log.Fatal(err)
@@ -631,15 +544,9 @@ func CheckGroupIDForEditOrDelete(uuid string) string {
 kiểm tra username và uuid khi user edit stream có khớp nhau hay không
 */
 func CheckUUIDofStreamForUser(uuid string) string {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"uuid": uuid})
 	if err != nil {
 		log.Fatal(err)
@@ -660,15 +567,9 @@ func CheckUUIDofStreamForUser(uuid string) string {
 	}
 }
 func CheckUsernameDelete(username string) string {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
@@ -692,16 +593,8 @@ func CheckUsernameDelete(username string) string {
 kiểm tra xem tên đăng nhập ở phần login có tồn tại hay không, return role level
 */
 func CheckUsernameLoggin(username string, password string) string {
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(ctx, clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-
 	col := client.Database("RTSP-WEB").Collection("USER")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
@@ -730,15 +623,9 @@ func CheckUsernameLoggin(username string, password string) string {
 	}
 }
 func CheckGroupIDEXIST(id_group string) bool {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("Group")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"id_group": id_group})
 	if err != nil {
 		log.Fatal(err)
@@ -755,15 +642,9 @@ func CheckGroupIDEXIST(id_group string) bool {
 	}
 }
 func CheckRoleLevelEXIST(level_role string) bool {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("Role")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"level_role": level_role})
 	if err != nil {
 		log.Fatal(err)
@@ -780,15 +661,9 @@ func CheckRoleLevelEXIST(level_role string) bool {
 	}
 }
 func CheckRoleIDEXIST(id_role string) bool {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("Role")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"id_role": id_role})
 	if err != nil {
 		log.Fatal(err)
@@ -809,15 +684,9 @@ func CheckRoleIDEXIST(id_role string) bool {
 kiểm tra username đã có hay chưa
 */
 func CheckUsernameEXIST(username string) bool {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		fmt.Println("connect Mongo error:", err)
-		os.Exit(1)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	defer client.Disconnect(ctx)
+	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
