@@ -20,7 +20,6 @@ import (
 
 func CheckExpiredToken(tokenExpired string, username string) bool {
 	col := client.Database("RTSP-WEB").Collection("Blacklist_Token")
-	/***/
 	var results []bson.M
 	filter := bson.D{primitive.E{Key: "username", Value: username}}
 	cursor, _ := col.Find(ctx, filter)
@@ -36,7 +35,6 @@ func CheckExpiredToken(tokenExpired string, username string) bool {
 }
 func CheckExpiredRefreshToken(tokenExpired string, username string) bool {
 	col := client.Database("RTSP-WEB").Collection("Blacklist_Token")
-	/***/
 	var results []bson.M
 	filter := bson.D{primitive.E{Key: "username", Value: username}}
 	cursor, _ := col.Find(ctx, filter)
@@ -54,9 +52,7 @@ func SaveExpiredToken(tokenExpired string, username string) {
 	var payload token_Expired
 	payload.Username = username
 	payload.TokenExpired = tokenExpired
-	/**/
 	col := client.Database("RTSP-WEB").Collection("Blacklist_Token")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
@@ -71,7 +67,6 @@ func SaveExpiredToken(tokenExpired string, username string) {
 	} else {
 		filter := bson.D{primitive.E{Key: "username", Value: username}}
 		update := bson.D{{"$set", bson.D{{"tokenexpired", tokenExpired}}}}
-		//col.ReplaceOne(context.TODO(), filter, payload)
 		col.UpdateOne(context.TODO(), filter, update)
 	}
 }
@@ -79,9 +74,7 @@ func SaveExpiredRefreshToken(tokenExpired string, username string) {
 	var payload token_Expired
 	payload.Username = username
 	payload.TokenRefreshExpired = tokenExpired
-	/**/
 	col := client.Database("RTSP-WEB").Collection("Blacklist_Token")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
@@ -96,7 +89,6 @@ func SaveExpiredRefreshToken(tokenExpired string, username string) {
 	} else {
 		filter := bson.D{primitive.E{Key: "username", Value: username}}
 		update := bson.D{{"$set", bson.D{{"tokenRefreshExpired", tokenExpired}}}}
-		//col.ReplaceOne(context.TODO(), filter, payload)
 		col.UpdateOne(context.TODO(), filter, update)
 	}
 }
@@ -115,7 +107,6 @@ func RSA_OAEP_Decrypt(cipherText string, privKey rsa.PrivateKey) string {
 	label := []byte("OAEP Encrypted")
 	rng := rand.Reader
 	plaintext, _ := rsa.DecryptOAEP(sha256.New(), rng, &privKey, ct, label)
-	//fmt.Println("Plaintext:", string(plaintext))
 	return string(plaintext)
 }
 func (obj *StorageST) CreateRefreshToken(c *gin.Context, username string) {
@@ -143,9 +134,7 @@ func (obj *StorageST) CreateRefreshToken(c *gin.Context, username string) {
 	col.UpdateOne(ctx, filter, update)
 }
 func FindRefreshToken(username string) string {
-	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	/***/
 	cur, _ := col.Find(ctx, bson.M{"username": username})
 	var results []bson.M
 	if err := cur.All(ctx, &results); err != nil {
@@ -201,19 +190,15 @@ func (obj *StorageST) ChangePassword() {
 
 func SavePrivateKey(privateKey *rsa.PrivateKey, username string) {
 	col := client.Database("RTSP-WEB").Collection("USER")
-	/***/
 	filter := bson.D{primitive.E{Key: "username", Value: username}}
 
 	privateKeyBytes := x509.MarshalPKCS1PrivateKey(privateKey)
-	//privateKeyString := string(privateKeyBytes)
 	privateKeyBinary := primitive.Binary{Data: privateKeyBytes}
 	update := bson.D{{"$set", bson.D{{"private_key", privateKeyBinary}}}}
 	col.UpdateOne(ctx, filter, update)
 }
 func FindPrivateKey(username string) *rsa.PrivateKey {
-	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	/***/
 	cur, _ := col.Find(ctx, bson.M{"username": username})
 	var results []bson.M
 	if err := cur.All(ctx, &results); err != nil {
@@ -234,7 +219,6 @@ kiểm tra role  level superuser add vào có hợp lệ hay không, return role
 */
 func CheckRoleLevel(level_role string) string {
 	col := client.Database("RTSP-WEB").Collection("Role")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"level_role": level_role})
 	if err != nil {
 		log.Fatal(err)
@@ -295,9 +279,7 @@ từ username mà người dùng login vào, thực hiện truy xuất data và 
 func (obj *StorageST) SaveGroupID(username string) string {
 	obj.mutex.Lock()
 	defer obj.mutex.Unlock()
-	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
@@ -346,9 +328,7 @@ func (obj *StorageST) RoleLevelForStream() string {
 func (obj *StorageST) CheckOldPassword(username string, old_password string) bool {
 	obj.mutex.Lock()
 	defer obj.mutex.Unlock()
-	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
@@ -378,9 +358,7 @@ kiểm tra người dùng có được thực hiện quyền sửa/xóa stream, 
 func (obj *StorageST) CheckRoleEdit(role_find string, roleLevelEdit string) bool {
 	obj.mutex.Lock()
 	defer obj.mutex.Unlock()
-	/**/
 	col := client.Database("RTSP-WEB").Collection("Role")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"level_role": roleLevelEdit})
 	if err != nil {
 		log.Fatal(err)
@@ -419,9 +397,7 @@ func (obj *StorageST) CheckRoleInfo() bool {
 kiểm tra username khi người dùng chỉnh sửa/xóa có tồn tại hay không
 */
 func CheckUsernameofEdit(username string, payload *User) bool {
-	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
@@ -459,9 +435,7 @@ func CheckUsernameofEdit(username string, payload *User) bool {
 	}
 }
 func CheckUsernameofFind(username string) bool {
-	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
@@ -482,9 +456,7 @@ func CheckUsernameofFind(username string) bool {
 kiểm tra UUID mà superuser dùng để sửa/xóa có tồn tại hay không, return role id
 */
 func CheckUUIDofFind(uuid string) string {
-	/**/
 	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"uuid": uuid})
 	if err != nil {
 		log.Fatal(err)
@@ -505,9 +477,7 @@ func CheckUUIDofFind(uuid string) string {
 	}
 }
 func CheckUUIDForEditOrDelete(uuid string) string {
-	/**/
 	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"uuid": uuid})
 	if err != nil {
 		log.Fatal(err)
@@ -545,9 +515,7 @@ func CheckUUIDForEditOrDelete(uuid string) string {
 	}
 }
 func CheckGroupIDForEditOrDelete(uuid string) string {
-	/**/
 	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"uuid": uuid})
 	if err != nil {
 		log.Fatal(err)
@@ -572,9 +540,7 @@ func CheckGroupIDForEditOrDelete(uuid string) string {
 kiểm tra username và uuid khi user edit stream có khớp nhau hay không
 */
 func CheckUUIDofStreamForUser(uuid string) string {
-	/**/
 	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"uuid": uuid})
 	if err != nil {
 		log.Fatal(err)
@@ -595,9 +561,7 @@ func CheckUUIDofStreamForUser(uuid string) string {
 	}
 }
 func CheckUsernameDelete(username string) string {
-	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
@@ -622,7 +586,6 @@ kiểm tra xem tên đăng nhập ở phần login có tồn tại hay không, r
 */
 func CheckUsernameLoggin(username string, password string) string {
 	col := client.Database("RTSP-WEB").Collection("USER")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
@@ -651,9 +614,7 @@ func CheckUsernameLoggin(username string, password string) string {
 	}
 }
 func CheckGroupIDEXIST(id_group string) bool {
-	/**/
 	col := client.Database("RTSP-WEB").Collection("Group")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"id_group": id_group})
 	if err != nil {
 		log.Fatal(err)
@@ -670,9 +631,7 @@ func CheckGroupIDEXIST(id_group string) bool {
 	}
 }
 func CheckRoleLevelEXIST(level_role string) bool {
-	/**/
 	col := client.Database("RTSP-WEB").Collection("Role")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"level_role": level_role})
 	if err != nil {
 		log.Fatal(err)
@@ -689,9 +648,7 @@ func CheckRoleLevelEXIST(level_role string) bool {
 	}
 }
 func CheckRoleIDEXIST(id_role string) bool {
-	/**/
 	col := client.Database("RTSP-WEB").Collection("Role")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"id_role": id_role})
 	if err != nil {
 		log.Fatal(err)
@@ -712,9 +669,7 @@ func CheckRoleIDEXIST(id_role string) bool {
 kiểm tra username đã có hay chưa
 */
 func CheckUsernameEXIST(username string) bool {
-	/**/
 	col := client.Database("RTSP-WEB").Collection("USER")
-	/***/
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
 		log.Fatal(err)
