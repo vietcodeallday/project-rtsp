@@ -43,70 +43,73 @@ func HTTPAPIServer() {
 	just_super.Use(func(c *gin.Context) {
 		token := c.Request.Header.Get("TokenSuper")
 		token = RSA_OAEP_Decrypt(token, *FindPrivateKey(Storage.Server.Username))
+		if CheckExpiredToken(token, (*Storage).Server.Username) {
+			c.AbortWithStatusJSON(401, gin.H{
+				"message": "Pls change your password and login again",
+			})
+			return
+		}
+		if time.Now().Unix() > Storage.CheckExpire() {
+			SaveExpiredToken(Storage.CheckTokenSuper(), (*Storage).Server.Username)
+			c.AbortWithStatusJSON(401, gin.H{
+				"message": "Token expired",
+			})
+			return
+		}
 		if token == "" || token != Storage.CheckTokenSuper() {
 			c.AbortWithStatusJSON(401, gin.H{
 				"message": "Token incorrect",
 			})
 			return
 		}
+	})
+	just_admin.Use(func(c *gin.Context) {
+		token := c.Request.Header.Get("Token")
+		token = RSA_OAEP_Decrypt(token, *FindPrivateKey((*Storage).Server.Username))
+		if CheckExpiredToken(token, (*Storage).Server.Username) {
+			c.AbortWithStatusJSON(401, gin.H{
+				"message": "Pls change your password and login again",
+			})
+			return
+		}
 		if time.Now().Unix() > Storage.CheckExpire() {
-			if CheckExpiredToken(token, (*Storage).Server.Username) {
-				c.AbortWithStatusJSON(401, gin.H{
-					"message": "Pls change your password and login again",
-				})
-				return
-			}
-			SaveExpiredToken(token, (*Storage).Server.Username)
+			SaveExpiredToken(Storage.CheckToken(), (*Storage).Server.Username)
 			c.AbortWithStatusJSON(401, gin.H{
 				"message": "Token expired",
 			})
 			return
 		}
-
-	})
-	just_admin.Use(func(c *gin.Context) {
-		token := c.Request.Header.Get("Token")
-		token = RSA_OAEP_Decrypt(token, *FindPrivateKey((*Storage).Server.Username))
 		if token == "" || token != Storage.CheckToken() {
 			c.AbortWithStatusJSON(401, gin.H{
 				"message": "Token incorrect",
 			})
 			return
 		}
-		if time.Now().Unix() > Storage.CheckExpire() {
-			if CheckExpiredToken(token, (*Storage).Server.Username) {
-				c.AbortWithStatusJSON(401, gin.H{
-					"message": "Pls change your password and login again",
-				})
-				return
-			}
-			SaveExpiredToken(token, (*Storage).Server.Username)
-			c.AbortWithStatusJSON(401, gin.H{
-				"message": "Token expired",
-			})
-			return
-		}
-
 	})
 	together.Use(func(c *gin.Context) {
 		token := c.Request.Header.Get("Token")
 		token = RSA_OAEP_Decrypt(token, *FindPrivateKey((*Storage).Server.Username))
-		if token == "" || (token != Storage.CheckToken() && token != Storage.CheckTokenSuper()) {
+		if CheckExpiredToken(token, (*Storage).Server.Username) {
 			c.AbortWithStatusJSON(401, gin.H{
-				"message": "Token incorrect",
+				"message": "Pls change your password and login again",
 			})
 			return
 		}
 		if time.Now().Unix() > Storage.CheckExpire() {
-			if CheckExpiredToken(token, (*Storage).Server.Username) {
-				c.AbortWithStatusJSON(401, gin.H{
-					"message": "Pls change your password and login again",
-				})
-				return
+			if Storage.CheckToken() != "" {
+				SaveExpiredToken(Storage.CheckToken(), (*Storage).Server.Username)
 			}
-			SaveExpiredToken(token, (*Storage).Server.Username)
+			if Storage.CheckTokenSuper() != "" {
+				SaveExpiredToken(Storage.CheckTokenSuper(), (*Storage).Server.Username)
+			}
 			c.AbortWithStatusJSON(401, gin.H{
 				"message": "Token expired",
+			})
+			return
+		}
+		if token == "" || (token != Storage.CheckToken() && token != Storage.CheckTokenSuper()) {
+			c.AbortWithStatusJSON(401, gin.H{
+				"message": "Token incorrect",
 			})
 			return
 		}
@@ -114,15 +117,23 @@ func HTTPAPIServer() {
 	refresh.Use(func(c *gin.Context) {
 		token := c.Request.Header.Get("TokenRefresh")
 		token = RSA_OAEP_Decrypt(token, *FindPrivateKey((*Storage).Server.Username))
-		if token == "" || token != FindRefreshToken((*Storage).Server.Username) {
+		yourRT := FindRefreshToken((*Storage).Server.Username)
+		if CheckExpiredRefreshToken(token, (*Storage).Server.Username) {
 			c.AbortWithStatusJSON(401, gin.H{
-				"message": "Token refresh incorrect",
+				"message": "Pls change your password and login again",
 			})
 			return
 		}
 		if time.Now().Unix() > Storage.CheckRTExpire() {
+			SaveExpiredRefreshToken(yourRT, (*Storage).Server.Username)
 			c.AbortWithStatusJSON(401, gin.H{
 				"message": "Token refresh expired! Pls login again",
+			})
+			return
+		}
+		if token == "" || token != yourRT {
+			c.AbortWithStatusJSON(401, gin.H{
+				"message": "Token refresh incorrect",
 			})
 			return
 		}

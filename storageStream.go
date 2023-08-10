@@ -7,7 +7,6 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
-	"fmt"
 	"os"
 	"time"
 
@@ -35,7 +34,22 @@ func CheckExpiredToken(tokenExpired string, username string) bool {
 	}
 	return false
 }
-
+func CheckExpiredRefreshToken(tokenExpired string, username string) bool {
+	col := client.Database("RTSP-WEB").Collection("Blacklist_Token")
+	/***/
+	var results []bson.M
+	filter := bson.D{primitive.E{Key: "username", Value: username}}
+	cursor, _ := col.Find(ctx, filter)
+	defer cursor.Close(ctx)
+	cursor.All(ctx, &results)
+	for _, doc := range results {
+		token_Expired_data := doc["tokenRefreshExpired"]
+		if tokenExpired == token_Expired_data {
+			return true
+		}
+	}
+	return false
+}
 func SaveExpiredToken(tokenExpired string, username string) {
 	var payload token_Expired
 	payload.Username = username
@@ -56,7 +70,32 @@ func SaveExpiredToken(tokenExpired string, username string) {
 		col.InsertOne(ctx, payload)
 	} else {
 		filter := bson.D{primitive.E{Key: "username", Value: username}}
-		update := bson.D{{"$set", bson.D{{"refresh_token", tokenExpired}}}}
+		update := bson.D{{"$set", bson.D{{"tokenexpired", tokenExpired}}}}
+		//col.ReplaceOne(context.TODO(), filter, payload)
+		col.UpdateOne(context.TODO(), filter, update)
+	}
+}
+func SaveExpiredRefreshToken(tokenExpired string, username string) {
+	var payload token_Expired
+	payload.Username = username
+	payload.TokenRefreshExpired = tokenExpired
+	/**/
+	col := client.Database("RTSP-WEB").Collection("Blacklist_Token")
+	/***/
+	cur, err := col.Find(ctx, bson.M{"username": username})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var results []bson.M
+	if err = cur.All(ctx, &results); err != nil {
+		log.Fatal(err)
+	}
+	if len(results) == 0 {
+		col.InsertOne(ctx, payload)
+	} else {
+		filter := bson.D{primitive.E{Key: "username", Value: username}}
+		update := bson.D{{"$set", bson.D{{"tokenRefreshExpired", tokenExpired}}}}
 		//col.ReplaceOne(context.TODO(), filter, payload)
 		col.UpdateOne(context.TODO(), filter, update)
 	}
@@ -124,14 +163,13 @@ func (obj *StorageST) CreateTokenSuper(c *gin.Context, publicKey rsa.PublicKey) 
 	defer obj.mutex.Unlock()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Issuer:    "super",
-		ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),
+		ExpiresAt: time.Now().Add(time.Minute * 1).Unix(),
 	})
 	obj.Server.expiresAt = token.Claims.(jwt.StandardClaims).ExpiresAt
 	tokenCreated, _ := token.SignedString([]byte(os.Getenv("JWT_SECRET_SUPER")))
 	obj.Server.tokenStringSuper = tokenCreated
 
 	tokenS := RSA_OAEP_Encrypt(tokenCreated, publicKey)
-	fmt.Println("")
 	c.String(200, "\ntoken: "+tokenS)
 
 	obj.Server.tokenString = ""
@@ -777,6 +815,13 @@ func (obj *StorageST) StreamEdit(uuid string, val StreamST) error {
 func (obj *StorageST) StopAll() {
 	obj.mutex.RLock()
 	defer obj.mutex.RUnlock()
+	if Storage.CheckToken() != "" {
+		SaveExpiredToken(Storage.CheckToken(), (*Storage).Server.Username)
+	}
+	if Storage.CheckTokenSuper() != "" {
+		SaveExpiredToken(Storage.CheckTokenSuper(), (*Storage).Server.Username)
+	}
+	SaveExpiredRefreshToken(FindRefreshToken((*Storage).Server.Username), (*Storage).Server.Username)
 	for _, st := range obj.Streams {
 		for _, i2 := range st.Channels {
 			if i2.runLock {
