@@ -7,6 +7,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-redis/redis"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -14,11 +15,23 @@ import (
 
 var client *mongo.Client
 var ctx context.Context
-
+var rdb *redis.Client
 func init() {
 	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
 	client, _ = mongo.Connect(context.TODO(), clientOptions)
 	ctx, _ = context.WithTimeout(context.Background(), 240*time.Hour)
+	CreateIndexUSER()
+	CreateIndexStream()
+	CreateIndexRole()
+	CreateIndexGroup()
+	CreateIndexBlackList()
+
+	options := &redis.Options{
+		Addr:     "redis-18352.c292.ap-southeast-1-1.ec2.cloud.redislabs.com:18352", 
+		Password: "MESkRZKAbkzJg3wlL3uqWAmDojXR5qBA",                           
+		DB:       0,
+	}
+	rdb = redis.NewClient(options)
 }
 func main() {
 	defer client.Disconnect(ctx)

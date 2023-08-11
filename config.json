@@ -1,7 +1,7 @@
 {
   "channel_defaults": {},
   "server": {
-    "RTexpiresAt": 1691802211,
+    "RTexpiresAt": 1692599267,
     "debug": true,
     "group_id": "1234567",
     "http_debug": false,
@@ -34,6 +34,21 @@
     "webrtc_port_min": 0
   },
   "streams": {
+    "1": {
+      "channels": {
+        "0": {
+          "debug": true,
+          "name": "stream",
+          "on_demand": true,
+          "url": "rtsp://admin:Abc123789_@222.253.220.109:1555/profile2/media.smp"
+        }
+      },
+      "group_id": "1234567",
+      "name": "vnptit",
+      "role_level": "admin",
+      "username": "admin",
+      "uuid": "1"
+    },
     "27aec28e-6181-4753-9acd-0456a75f0289": {
       "channels": {
         "0": {

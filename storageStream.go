@@ -15,9 +15,66 @@ import (
 	"github.com/liip/sheriff"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 )
 
+func CreateIndexUSER() {
+	// Create index model
+	indexModel := mongo.IndexModel{
+		Keys:    bson.D{{"username", 1}},
+		Options: options.Index().SetName("index_name"),
+	}
+
+	// Create index on collection
+	collection := client.Database("RTSP-WEB").Collection("USER")
+	collection.Indexes().CreateOne(context.Background(), indexModel)
+}
+func CreateIndexRole() {
+	// Create index model
+	indexModel := mongo.IndexModel{
+		Keys:    bson.D{{"level_role", 1}},
+		Options: options.Index().SetName("index_name"),
+	}
+
+	// Create index on collection
+	collection := client.Database("RTSP-WEB").Collection("Role")
+	collection.Indexes().CreateOne(context.Background(), indexModel)
+}
+func CreateIndexGroup() {
+	// Create index model
+	indexModel := mongo.IndexModel{
+		Keys:    bson.D{{"id_group", 1}},
+		Options: options.Index().SetName("index_name"),
+	}
+
+	// Create index on collection
+	collection := client.Database("RTSP-WEB").Collection("Group")
+	collection.Indexes().CreateOne(context.Background(), indexModel)
+}
+func CreateIndexStream() {
+	// Create index model
+	indexModel := mongo.IndexModel{
+		Keys:    bson.D{{"uuid", 1}},
+		Options: options.Index().SetName("index_name"),
+	}
+
+	// Create index on collection
+	collection := client.Database("RTSP-WEB").Collection("StreamOfUser")
+	collection.Indexes().CreateOne(context.Background(), indexModel)
+}
+func CreateIndexBlackList() {
+	// Create index model
+	indexModel := mongo.IndexModel{
+		Keys:    bson.D{{"username", 1}},
+		Options: options.Index().SetName("index_name"),
+	}
+
+	// Create index on collection
+	collection := client.Database("RTSP-WEB").Collection("Blacklist_Token")
+	collection.Indexes().CreateOne(context.Background(), indexModel)
+}
 func CheckExpiredToken(tokenExpired string, username string) bool {
 	col := client.Database("RTSP-WEB").Collection("Blacklist_Token")
 	var results []bson.M
@@ -162,6 +219,9 @@ func (obj *StorageST) CreateTokenSuper(c *gin.Context, publicKey rsa.PublicKey) 
 	c.String(200, "\ntoken: "+tokenS)
 
 	obj.Server.tokenString = ""
+	key := "tokenSuper"
+	value := tokenS
+	rdb.HSet("TokenSuper", key, value)
 }
 
 /*
@@ -183,6 +243,9 @@ func (obj *StorageST) CreateToken(c *gin.Context, publicKey rsa.PublicKey) {
 
 	c.String(200, " \ntoken: "+tokenS)
 	obj.Server.tokenStringSuper = ""
+	key := "token"
+	value := tokenS
+	rdb.HSet("Token", key, value)
 }
 func (obj *StorageST) ChangePassword() {
 	obj.Server.expiresAt = 0
