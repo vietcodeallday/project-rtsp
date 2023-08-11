@@ -161,9 +161,9 @@ type FindUsername struct {
 	Username string `json:"username,omitempty" bson:"username,omitempty" groups:"api,config"`
 }
 type token_Expired struct {
-	Username            string `json:"username,omitempty" bson:"username,omitempty" groups:"api,config"`
-	TokenExpired        string `json:tokenexpired,omitempty" bson:"tokenexpired,omitempty" groups:"api,config"`
-	TokenRefreshExpired string `json:tokenRefreshExpired,omitempty" bson:"tokenRefreshExpired,omitempty" groups:"api,config"`
+	Username              string `json:"username,omitempty" bson:"username,omitempty" groups:"api,config"`
+	TokenExpired          string `json:tokenexpired,omitempty" bson:"tokenexpired,omitempty" groups:"api,config"`
+	token_refresh_expired string `json:token_refresh_expired,omitempty" bson:"token_refresh_expired,omitempty" groups:"api,config"`
 }
 
 // ClientST client storage section

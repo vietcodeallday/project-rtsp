@@ -16,6 +16,7 @@ import (
 var client *mongo.Client
 var ctx context.Context
 var rdb *redis.Client
+
 func init() {
 	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
 	client, _ = mongo.Connect(context.TODO(), clientOptions)
@@ -27,13 +28,14 @@ func init() {
 	CreateIndexBlackList()
 
 	options := &redis.Options{
-		Addr:     "redis-18352.c292.ap-southeast-1-1.ec2.cloud.redislabs.com:18352", 
-		Password: "MESkRZKAbkzJg3wlL3uqWAmDojXR5qBA",                           
+		Addr:     "redis-18352.c292.ap-southeast-1-1.ec2.cloud.redislabs.com:18352",
+		Password: "MESkRZKAbkzJg3wlL3uqWAmDojXR5qBA",
 		DB:       0,
 	}
 	rdb = redis.NewClient(options)
 
 	addSuperUser()
+	AddRoleSuperUser()
 }
 func main() {
 	defer client.Disconnect(ctx)

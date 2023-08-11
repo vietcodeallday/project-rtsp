@@ -98,7 +98,7 @@ func CheckExpiredRefreshToken(tokenExpired string, username string) bool {
 	defer cursor.Close(ctx)
 	cursor.All(ctx, &results)
 	for _, doc := range results {
-		token_Expired_data := doc["tokenRefreshExpired"]
+		token_Expired_data := doc["token_refresh_expired"]
 		if tokenExpired == token_Expired_data {
 			return true
 		}
@@ -130,7 +130,7 @@ func SaveExpiredToken(tokenExpired string, username string) {
 func SaveExpiredRefreshToken(tokenExpired string, username string) {
 	var payload token_Expired
 	payload.Username = username
-	payload.TokenRefreshExpired = tokenExpired
+	payload.token_refresh_expired = tokenExpired
 	col := client.Database("RTSP-WEB").Collection("Blacklist_Token")
 	cur, err := col.Find(ctx, bson.M{"username": username})
 	if err != nil {
@@ -145,7 +145,7 @@ func SaveExpiredRefreshToken(tokenExpired string, username string) {
 		col.InsertOne(ctx, payload)
 	} else {
 		filter := bson.D{primitive.E{Key: "username", Value: username}}
-		update := bson.D{{"$set", bson.D{{"tokenRefreshExpired", tokenExpired}}}}
+		update := bson.D{{"$set", bson.D{{"token_refresh_expired", tokenExpired}}}}
 		col.UpdateOne(context.TODO(), filter, update)
 	}
 }
@@ -295,6 +295,24 @@ func addSuperUser() {
 		payload.RoleLevel = "super_user"
 		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
 		payload.Password = string(hashedPassword)
+		col.InsertOne(ctx, payload)
+	}
+}
+func AddRoleSuperUser() {
+	col := client.Database("RTSP-WEB").Collection("Role")
+	cur, err := col.Find(ctx, bson.M{"level_role": "super_user"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var results []bson.M
+	if err = cur.All(ctx, &results); err != nil {
+		log.Fatal(err)
+	}
+	if len(results) == 0 {
+		var payload Role
+		payload.IDRole = "0"
+		payload.LevelRole = "super_user"
 		col.InsertOne(ctx, payload)
 	}
 }
