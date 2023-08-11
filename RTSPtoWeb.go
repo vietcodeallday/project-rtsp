@@ -32,6 +32,8 @@ func init() {
 		DB:       0,
 	}
 	rdb = redis.NewClient(options)
+
+	addSuperUser()
 }
 func main() {
 	defer client.Disconnect(ctx)

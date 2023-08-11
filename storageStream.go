@@ -277,6 +277,28 @@ func FindPrivateKey(username string) *rsa.PrivateKey {
 	return nil
 }
 
+func addSuperUser() {
+	col := client.Database("RTSP-WEB").Collection("USER")
+	cur, err := col.Find(ctx, bson.M{"username": "super_user"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var results []bson.M
+	if err = cur.All(ctx, &results); err != nil {
+		log.Fatal(err)
+	}
+	if len(results) == 0 {
+		var payload User
+		payload.Username = "super_user"
+		payload.Password = "super_user"
+		payload.RoleLevel = "super_user"
+		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
+		payload.Password = string(hashedPassword)
+		col.InsertOne(ctx, payload)
+	}
+}
+
 /*
 kiểm tra role  level superuser add vào có hợp lệ hay không, return role id
 */
