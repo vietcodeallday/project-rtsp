@@ -18,9 +18,11 @@ var ctx context.Context
 var rdb *redis.Client
 
 func init() {
-	clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
+	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	clientOptions := options.Client().ApplyURI("mongodb+srv://quocvietvu81:quocvietvu81@intern.ye7jfrl.mongodb.net/RTSP?retryWrites=true&w=majority").SetServerAPIOptions(serverAPI)
+	// clientOptions := options.Client().ApplyURI("mongodb://192.168.56.1:27017")
 	client, _ = mongo.Connect(context.TODO(), clientOptions)
-	ctx, _ = context.WithTimeout(context.Background(), 240*time.Hour)
+	ctx, _ = context.WithTimeout(context.Background(), 90*time.Hour)
 	CreateIndexUSER()
 	CreateIndexStream()
 	CreateIndexRole()
@@ -38,7 +40,6 @@ func init() {
 	AddRoleSuperUser()
 }
 func main() {
-	defer client.Disconnect(ctx)
 	log.WithFields(logrus.Fields{
 		"module": "main",
 		"func":   "main",

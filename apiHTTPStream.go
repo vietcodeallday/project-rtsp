@@ -25,7 +25,7 @@ func AddGroup(c *gin.Context) {
 		})
 		return
 	} else {
-		col := client.Database("RTSP-WEB").Collection("Group")
+		col := client.Database("RTSP").Collection("Group")
 		col.InsertOne(ctx, payload)
 		c.IndentedJSON(200, Message{Status: 1, Payload: Success})
 	}
@@ -69,7 +69,7 @@ func AddRole(c *gin.Context) {
 		})
 		return
 	} else {
-		col := client.Database("RTSP-WEB").Collection("Role")
+		col := client.Database("RTSP").Collection("Role")
 		col.InsertOne(ctx, payload)
 		c.IndentedJSON(200, Message{Status: 1, Payload: Success})
 	}
@@ -117,13 +117,13 @@ func AddUser(c *gin.Context) {
 	}
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
 	payload.Password = string(hashedPassword)
-	col := client.Database("RTSP-WEB").Collection("USER")
+	col := client.Database("RTSP").Collection("USER")
 	col.InsertOne(ctx, payload)
 
 	var blackList token_Expired
 	blackList.Username = payload.Username
 	blackList.TokenExpired = ""
-	col = client.Database("RTSP-WEB").Collection("Blacklist_Token")
+	col = client.Database("RTSP").Collection("Blacklist_Token")
 	col.InsertOne(ctx, blackList)
 
 	c.IndentedJSON(200, Message{Status: 1, Payload: Success})
@@ -150,7 +150,7 @@ func EditUser(c *gin.Context) {
 		})
 		return
 	}
-	col := client.Database("RTSP-WEB").Collection("USER")
+	col := client.Database("RTSP").Collection("USER")
 	if !CheckUsernameofEdit(username, &payload) {
 		c.AbortWithStatusJSON(500, gin.H{
 			"message": "Username not found",
@@ -165,7 +165,7 @@ func DeleteUser(c *gin.Context) {
 	var payload FindUsername
 	c.BindJSON(&payload)
 	username := payload.Username
-	col := client.Database("RTSP-WEB").Collection("USER")
+	col := client.Database("RTSP").Collection("USER")
 	if !CheckUsernameofFind(username) {
 		c.AbortWithStatusJSON(500, gin.H{
 			"message": "Username not found",
@@ -183,7 +183,7 @@ func DeleteUser(c *gin.Context) {
 	c.IndentedJSON(200, Message{Status: 1, Payload: Success})
 }
 func ListUser(c *gin.Context) {
-	col := client.Database("RTSP-WEB").Collection("USER")
+	col := client.Database("RTSP").Collection("USER")
 	var results []bson.M
 	filter := bson.D{primitive.E{Key: "username", Value: bson.D{{"$exists", true}}}}
 	cursor, _ := col.Find(ctx, filter)
@@ -249,7 +249,7 @@ func HTTPAPIChangePassword(c *gin.Context) {
 	OldPass := payload.Old_Password
 	NewPass := payload.New_Password
 	/**/
-	col := client.Database("RTSP-WEB").Collection("USER")
+	col := client.Database("RTSP").Collection("USER")
 	/***/
 	filter := bson.D{primitive.E{Key: "username", Value: (*Storage).UsernameForStream()}}
 	if !(*Storage).CheckOldPassword((*Storage).UsernameForStream(), OldPass) {
@@ -299,7 +299,7 @@ func HTTPAPIServerStreams(c *gin.Context) {
 		c.IndentedJSON(500, Message{Status: 0, Payload: err.Error()})
 		return
 	}
-	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
+	col := client.Database("RTSP").Collection("StreamOfUser")
 	var results []bson.M
 	if (*Storage).CheckRoleInfo() {
 		filter := bson.D{primitive.E{Key: "group_id", Value: bson.D{{"$exists", true}}}}
@@ -483,7 +483,7 @@ func HTTPAPIServerStreamAdd(c *gin.Context) {
 		}).Errorln(err.Error())
 		return
 	}
-	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
+	col := client.Database("RTSP").Collection("StreamOfUser")
 	col.InsertOne(ctx, payload)
 	c.IndentedJSON(200, Message{Status: 1, Payload: Success})
 }
@@ -509,7 +509,7 @@ func HTTPAPIServerStreamEdit(c *gin.Context) {
 		})
 		return
 	}
-	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
+	col := client.Database("RTSP").Collection("StreamOfUser")
 	if CheckUUIDofFind(uuid) == "" {
 		c.AbortWithStatusJSON(500, gin.H{
 			"message": "UUID not found! You are not allowed to change the UUID",
@@ -577,7 +577,7 @@ func HTTPAPIServerStreamDelete(c *gin.Context) {
 	var payload FindUUID
 	c.BindJSON(&payload)
 	uuid := payload.UUID
-	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
+	col := client.Database("RTSP").Collection("StreamOfUser")
 	if CheckUUIDofFind(uuid) == "" {
 		c.AbortWithStatusJSON(500, gin.H{
 			"message": "UUID not found",
@@ -669,7 +669,7 @@ func HTTPAPIServerStreamInfo(c *gin.Context) {
 			"call":   "StreamInfo",
 		}).Errorln(err.Error())
 	}
-	col := client.Database("RTSP-WEB").Collection("StreamOfUser")
+	col := client.Database("RTSP").Collection("StreamOfUser")
 	var result []bson.M
 	filter := bson.D{primitive.E{Key: "uuid", Value: uuid}}
 	cursor, _ := col.Find(ctx, filter)
